@@ -9,7 +9,7 @@ export default function LastfmList() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const artists = await api.getItems("Coldplay");
+        const artists = await api.getItems("");
 
         const details = await Promise.all(
           artists.map(async (artist) => {
