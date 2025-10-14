@@ -1,50 +1,54 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/ApiLastfm";
 
-export default function LastfmList() {
-  const [itens, setItens] = useState([]);
+export default function LastfmList({ artists }) {
+  const [detailedArtists, setDetailedArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const artists = await api.getItems("");
+        setLoading(true);
+
 
         const details = await Promise.all(
           artists.map(async (artist) => {
-            const info = await api.getItemById(artist.name);
+            const info = await api.getItemById(artist.name);  
             return {
               name: artist.name,
-              listeners: info.artist.stats?.listeners || "N/A",
-              url: artist.url
+              listeners: info.stats?.listeners || "N/A",
+              url: artist.url,
             };
           })
         );
 
-        setItens(details);
+        setDetailedArtists(details);
       } catch (err) {
-        console.error(err);
-        setError("Erro ao buscar artistas");
+        console.error("Erro ao buscar detalhes dos artistas", err);
+        setError("Erro ao buscar detalhes dos artistas");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
-  }, []);
+    if (artists.length > 0) {
+      fetchData();
+    }
+  }, [artists]); 
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) return <p>Carregando detalhes...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div>
-      <h2>Lista de Artistas</h2>
-      {itens.map((item) => (
-        <div key={item.name} style={{ marginBottom: "10px" }}>
-          <strong>{item.name}</strong> - {item.listeners} ouvintes<br />
-          <a href={item.url} target="_blank" rel="noopener noreferrer">
-            Ver no Last.fm
+    <div className="grid">
+      {detailedArtists.map((artist) => (
+        <div className="card" key={artist.name}>
+          <h3>{artist.name}</h3>
+          <p>{Number(artist.listeners).toLocaleString('pt-BR')} ouvintes</p>
+          <br></br>
+          <a href={artist.url} target="_blank" rel="noopener noreferrer">
+            Ver mais
           </a>
         </div>
       ))}

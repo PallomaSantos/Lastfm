@@ -1,6 +1,9 @@
 import { useState } from "react";
 import api from "./services/ApiLastfm";
+import LastfmList from "./components/LastfmList";
+import lastfmLogo from './assets/lastfmLogo.png';
 import "./App.css";
+
 
 export default function App() {
   const [artistName, setArtistName] = useState("");
@@ -8,26 +11,30 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   async function handleSearch(e) {
-    e.preventDefault(); 
+    e.preventDefault();
 
     if (!artistName.trim()) {
       alert("Por favor, digite o nome de um artista.");
       return;
     }
 
-    setLoading(true); 
-    setArtists([]);  
+    setLoading(true);
+    setArtists([]); 
 
-    const data = await api.getItems(artistName);
-
-    setArtists(data);
-    setLoading(false); 
+    try {
+      const data = await api.getItems(artistName);
+      setArtists(data);
+    } catch (err) {
+      console.error("Erro ao buscar artistas", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="container">
-      <h1>🎧 Buscar Artistas - Last.fm</h1>
-
+      <img className="logoApp" src={lastfmLogo} alt="LastFM Logo" />
+      <h1>Buscar Artistas - Last.fm</h1>
       <form onSubmit={handleSearch} className="search-box">
         <input
           type="text"
@@ -42,21 +49,7 @@ export default function App() {
 
       {loading && <p className="loading-message">Carregando...</p>}
 
-
-      <div className="grid">
-        {artists.map((artist) => (
-
-          <div className="card" key={artist.mbid || artist.name}>
-            <img
-              src={artist.image?.[3]?.["#text"] || "https://placehold.co/180x180?text=Sem+Foto"}
-              alt={artist.name}
-              loading="lazy"
-            />
-            <h3>{artist.name}</h3>
-            <p>👥 {Number(artist.listeners).toLocaleString('pt-BR')} ouvintes</p>
-          </div>
-        ))}
-      </div>
+      {artists.length > 0 && !loading && <LastfmList artists={artists} />}
     </div>
   );
 }

@@ -28,4 +28,30 @@ async function getItems(artistName) {
   }
 }
 
-export default { getItems };
+/**
+ * Busca informações detalhadas de um artista.
+ * @param {string} artistName - Nome do artista.
+ * @returns {Promise<Object>} Objeto com dados detalhados do artista.
+ */
+async function getItemById(artistName) {
+  try {
+    const url = `${BASE_URL}?method=artist.getinfo&artist=${encodeURIComponent(
+      artistName
+    )}&api_key=${API_KEY}&format=json`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data.artist || {};
+  } catch (error) {
+    console.error("Erro ao buscar informações do artista:", error);
+    return {};
+  }
+}
+
+export default { getItems, getItemById };
